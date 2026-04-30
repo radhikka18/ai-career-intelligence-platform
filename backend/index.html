@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ATS Resume Checker</title>
+
+        <style>
+            body {
+                font-family: Arial;
+                padding: 20px;
+            }
+
+            h2 {
+                color: blue;
+            }
+
+            #result{
+                margin-top: 20px;
+                padding: 15px;
+                border: 1px solid #ccc;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <h2>ATS Resume Checker</h2>
+
+        <form id="form">
+            <input type="file" id="file"
+            required><br><br>
+
+            <textarea id="job"
+            placeholder="Enter job description"
+            rows="5" cols="40" required></textarea><br><br>
+
+            <button onclick="analyze(event)">Check ATS</button>
+        </form>
+
+        <h3>Result:</h3>
+        <pre id="result"></pre>
+
+        <script>
+
+            document.getElementById("form").onsubmit = function(e) {
+                e.preventDefault();
+
+                console.log("Button clicked");
+
+                const fileInput = document.getElementById("file");
+                const jobInput = document.getElementById("job");
+                const resultBox = document.getElementById("result");
+
+                const file = fileInput.files[0];
+                const job = jobInput.value;
+
+                if (!file) {
+                    alert("Please upload a file");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file",file);
+                formData.append("job_description",job);
+
+                resultBox.innerText = "Checking...";
+
+                fetch("http://127.0.0.1:8000/upload-resume"
+                ,{
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    resultBox.innerHTML = `
+                    <h2>ATS Score: ${data.ats_score}</h2>
+
+                    <h3 style="color:green;">Matched Skills</h3>
+                    <p>${(data.matched_skills || []).join(",") || "None"}</p>
+
+                    <h3 style="color":red;">Missing Skills</h3>
+                    <p>${(data.missing_skills || []).join(",") || "None"}</p>
+                    <h3>Suggestions<\h3>
+                        <ul>
+                        ${(data.suggestions || []).map(s=>`<li>${s}</li>`).join("") || "<li>No suggestions </li>"}
+                        <ul>
+                            `;
+                        })
+                
+                .catch(error => {
+                    console.log(error);
+                    resultBox.innerText = "Error:"
+                    + error;
+                });
+                };
+        </script>
+    </body>
+</html>
