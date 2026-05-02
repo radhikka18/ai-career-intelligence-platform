@@ -1,17 +1,13 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile, Form
 import pdfplumber
-import spacy
 import io
-from sentence_transformers import SentenceTransformer, util
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 print("MAIN FILE IS RUNNING")
 
 app = FastAPI()
-
-nlp = spacy.load("en_core_web_sm")
-
-st_model = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,35 +27,23 @@ def extract_text(file_bytes):
 
 
 def extract_skills(text):
-    doc = nlp(text.lower())
     keywords = [
-        "react", "node", "express",
-        "sql", "mongodb",
-        "machine learning", "deep learning",
-        "docker", "kubernetes",
-        "aws", "azure",
-        "git", "github", "python", "javascript"
+        "react", "node", "express", "sql", "mongodb",
+        "machine learning", "deep learning", "docker",
+        "kubernetes", "aws", "azure", "git", "github",
+        "python", "javascript", "fastapi", "flask"
     ]
     skills = []
-    for token in doc:
-        if token.text in keywords:
-            skills.append(token.text)
+    for keyword in keywords:
+        if keyword in text.lower():
+            skills.append(keyword)
     return list(set(skills))
 
 
-def calculate_ats(resume_skills, job_skills):
-    matched = [skill for skill in job_skills if skill in resume_skills]
-    missing = [skill for skill in job_skills if skill not in resume_skills]
-    suggestions = [f"Add '{skill}' to your resume" for skill in missing]
-    return matched, missing, suggestions
-
-
-def get_semantic_score(resume_text: str, jd_text: str) -> int:
-    global st_model
-    if st_model is None:
-        st_model = SentenceTransformer('all-Minim-L6-v2')
-    embeddings = st_model.encode([resume_text, jd_text], convert_to_tensor=True)
-    score = util.cos_sim(embeddings[0], embeddings[1])
+def get_ats_score(resume_text: str, jd_text: str) -> int:
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
+    score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
     return round(float(score) * 100)
 
 
@@ -80,8 +64,12 @@ def get_section_scores(resume_text: str, jd_text: str) -> dict:
     scores = {}
     for section, content in sections.items():
         if content.strip():
-            emb = st_model.encode([content, jd_text], convert_to_tensor=True)
-            scores[section] = round(float(util.cos_sim(emb[0], emb[1])) * 100)
+            vectorizer = TfidfVectorizer()
+            try:
+                tfidf = vectorizer.fit_transform([content, jd_text])
+                scores[section] = round(float(cosine_similarity(tfidf[0:1], tfidf[1:2])[0][0]) * 100)
+            except:
+                scores[section] = 0
         else:
             scores[section] = 0
 
@@ -98,8 +86,12 @@ async def upload_resume(
         resume_text = extract_text(content)
         resume_skills = extract_skills(resume_text)
         job_skills = extract_skills(job_desc)
-        matched, missing, suggestions = calculate_ats(resume_skills, job_skills)
-        ats_score = get_semantic_score(resume_text, job_desc)
+
+        matched = [s for s in job_skills if s in resume_skills]
+        missing = [s for s in job_skills if s not in resume_skills]
+        suggestions = [f"Add '{s}' to your resume" for s in missing]
+
+        ats_score = get_ats_score(resume_text, job_desc)
         section_scores = get_section_scores(resume_text, job_desc)
 
         return {
@@ -122,3 +114,4 @@ async def login(
     if email == "admin@gmail.com" and password == "1234":
         return {"message": "Login successful"}
     return {"error": "Invalid credentials"}
+
