@@ -11,9 +11,7 @@ app = FastAPI()
 
 nlp = spacy.load("en_core_web_sm")
 
-print("Loading Sentence Transformer model...")
-st_model = SentenceTransformer('all-MiniLM-L6-v2')
-print("Model loaded!")
+st_model = None
 
 app.add_middleware(
     CORSMiddleware,
