@@ -55,6 +55,9 @@ def calculate_ats(resume_skills, job_skills):
 
 
 def get_semantic_score(resume_text: str, jd_text: str) -> int:
+    global st_model
+    if st_model is None:
+        st_model = SentenceTransformer('all-Minim-L6-v2')
     embeddings = st_model.encode([resume_text, jd_text], convert_to_tensor=True)
     score = util.cos_sim(embeddings[0], embeddings[1])
     return round(float(score) * 100)
