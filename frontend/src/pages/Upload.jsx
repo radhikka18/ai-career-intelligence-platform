@@ -392,7 +392,7 @@ function Upload() {
                       <div className="result-box-title" style={{ marginBottom: "20px" }}>📊 Section Breakdown</div>
                       {[
                         { label: "Skills", value: result.section_scores.skills },
-                        { label: "Experience", value: result.section_scores.experice },
+                        { label: "Experience", value: result.section_scores.experience },
                         { label: "Education", value: result.section_scores.education },
                       ].map((item, i) => (
                         <div className="section-score-item" key={i}>
