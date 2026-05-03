@@ -28,7 +28,7 @@ function Upload() {
     formData.append("email", email);
     formData.append("password", password);
     try {
-      const response = await fetch("http://127.0.0.1:8000/login", {
+      const response = await fetch("http://ai-career-intelligence-platform-rzzm.onrender.com/login", {
         method: "POST",
         body: formData,
       });
@@ -56,7 +56,7 @@ function Upload() {
     formData.append("job_desc", jobDesc);
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:8000/upload-resume", {
+      const response = await fetch("https://ai-carrer-intelligence-platform-rzzm.onrender.com/upload-resume", {
         method: "POST",
         body: formData,
       });
