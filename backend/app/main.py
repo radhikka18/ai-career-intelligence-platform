@@ -21,11 +21,11 @@ app.add_middleware(
 def extract_text(file_bytes, filename=""):
     if isinstance(filename, str) and filename.endswith(".docx"):
         import docx
-        doc = docx.Document(io.BYtesIO(file_bytes))
+        doc = docx.Document(io.BytesIO(file_bytes))
         text = "\n".join([para.text for para in doc.paragraphs])
         return text.lower()
     else:
-        with pdfplumber.open(io.BYtesIO(file_bytes)) as pdf :
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf :
             text = ""
             for page in pdf.pages:
                 text += page.extract_text() or ""
