@@ -19,7 +19,7 @@ app.add_middleware(
 
 
 def extract_text(file_bytes, filename=""):
-    if filename.endswitch(".docx"):
+    if isinstance(filename, str) and filename.endswith(".docx"):
         import docx
         doc = docx.Document(io.BYtesIO(file_bytes))
         text = "\n".join([para.text for para in doc.paragraphs])
