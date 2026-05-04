@@ -51,8 +51,15 @@ def extract_skills(text):
 def get_ats_score(resume_text: str, jd_text: str) -> int:
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
-    score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-    return round(float(score) * 100)
+    tfidf_score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+    
+    resume_words = set(resume_text.lower().split())
+    jd_words = set(jd_text.lower().split())
+    common = resume_words.intersection(jd_words)
+    keyword_score = len(common) / max(len(jd_wods), 1)
+    
+    final_score = (tfidf_score * 0.5) + (keyword_score * 0.5)
+    return min(round(float(score) * 100),100)
 
 
 def get_section_scores(resume_text: str, jd_text: str) -> dict:
