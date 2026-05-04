@@ -59,7 +59,7 @@ def get_ats_score(resume_text: str, jd_text: str) -> int:
     keyword_score = len(common) / max(len(jd_words), 1)
     
     final_score = (tfidf_score * 0.5) + (keyword_score * 0.5)
-    return min(round(float(score) * 100),100)
+    return min(round(float(final_score) * 100),100)
 
 
 def get_section_scores(resume_text: str, jd_text: str) -> dict:
