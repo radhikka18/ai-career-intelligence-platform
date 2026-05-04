@@ -126,7 +126,11 @@ async def login(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    if email == "admin@gmail.com" and password == "1234":
+    USERS = {
+        "admin@gmail.com": "1234",
+        "user@gmail.com": "password123"
+    }
+    if email in USERS and USERS[email] == password:
         return {"message": "Login successful"}
     return {"error": "Invalid credentials"}
 
