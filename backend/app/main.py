@@ -18,12 +18,20 @@ app.add_middleware(
 )
 
 
-def extract_text(file_bytes):
-    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() or ""
+def extract_text(file_bytes, filename=""):
+    if filename.endswitch(".docx"):
+        import docx
+        doc = docx.Document(io.BYtesIO(file_bytes))
+        text = "\n".join([para.text for para in doc.paragraphs])
         return text.lower()
+    else:
+        with pdfplumber.open(io.BYtesIO(file_bytes)) as pdf :
+            text = ""
+            for page in pdf.pages:
+                text += page.extract_text() or ""
+            return text.lower()
+        
+        
 
 
 def extract_skills(text):
@@ -83,7 +91,7 @@ async def upload_resume(
 ):
     try:
         content = await file.read()
-        resume_text = extract_text(content)
+        resume_text = extract_text(content, file.filename)
         resume_skills = extract_skills(resume_text)
         job_skills = extract_skills(job_desc)
 
